@@ -1,0 +1,83 @@
+import random
+
+from game1 import *
+from classes import *
+
+def build_creaturelist(playerlist, moblist):
+    for item in playerlist:
+        while True:
+            try:
+                item.initiative = int(raw_input("Please enter the initiative of " + str(item) + ": "))
+                break
+            except ValueError:
+                print "\nThat wasn't an integer."
+    return playerlist + moblist
+
+def build_uidict(creaturelist):
+    uidict = {}
+    for item in creaturelist:
+        uidict[item.name] = item
+    creaturelist.sort(reverse = True)
+    return uidict 
+
+def play_turn (creaturelist, uidict, item):
+    while True:
+        try:
+            choice = raw_input("\nWould you like to attack, cast, or other? ")
+            if (choice == "attack"):
+                melee_attack(creaturelist, uidict, item)
+                break
+            elif (choice == "cast"):
+                cast(item)
+                break
+            elif (choice == "other"):
+                print "\tOther action taken."
+                break
+            else:
+                raise KeyError
+        except KeyError:
+            print "Please choose attack, cast or other."
+            
+def melee_attack(creaturelist, uidict, item):
+    while True:
+        try:
+            target = raw_input("\tPlease enter the target: ")
+            if uidict[target].isdead():
+                raise KeyError
+            if isinstance(uidict[target], player) and isinstance(item, player):
+                raise KeyError
+            elif isinstance(uidict[target], mob) and isinstance(item, mob):
+                raise KeyError
+            item.attack(uidict[target])
+            break
+        except KeyError:
+            print "\t\tThat wasn't a valid target."
+    if (uidict[target].health < 1):
+        print "\t\tThis creature is dead!"
+        moblist.remove(uidict[target])
+
+def cast(item):
+    item.cast_spell()
+
+def play_game(creaturelist, uidict):
+    while [creature for creature in creaturelist if isinstance(creature, mob) if creature.health > 0]:
+        for item in creaturelist:
+            if (item.health > 0):
+                print "\nNow turn of: " + str(item)
+            play_turn(creaturelist, uidict, item)    
+            if not len(moblist):
+                print "All mobs are dead!"
+                return
+            
+def main():
+
+    creaturelist = build_creaturelist(playerlist, moblist)
+    uidict = build_uidict(creaturelist)
+    
+    print "\n***** BEGINNING ENCOUNTER #1 *****\n"
+    play_game(creaturelist, uidict)
+
+    return
+
+if __name__ == '__main__':
+    main()
